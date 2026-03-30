@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candle Sensei - Trading Tools Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> 
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&family=Orbitron:wght@600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            position: relative;
+            transition: background 0.4s, color 0.4s;
+        }
+        body.light { background: #f8fafc; color: #1f2937; }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: url('images/photo_2026-03-22_02-07-48.jpg') no-repeat center center;
+            background-size: cover;
+            filter: blur(8px);
+            opacity: 0.35;
+            z-index: -1;
+        }
+        .sage-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(26,26,26,0.95);
+            border: 1px solid #555;
+        }
+        .sage-card:hover {
+            transform: translateY(-10px);
+            border-color: #ff6b35;
+            box-shadow: 0 25px 30px -10px rgba(255,107,53,0.4);
+        }
+        .modal {
+            animation: modalPop 0.4s ease forwards;
+        }
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .gold-accent { color: #ffd700; }
+        .live-price { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+        /* Mobile improvements */
+        @media (max-width: 768px) {
+            .grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- NAVBAR -->
+    <nav class="bg-black/80 border-b border-orange-900/50 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="images/photo_2026-03-22_02-07-48.jpg" alt="Logo" class="w-12 h-12 rounded-2xl object-cover shadow-lg">
+                <h1 class="text-3xl font-bold tracking-tight bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">Candle Sensei</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="openSenseiAcademy()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-2xl text-sm font-bold hover:scale-105 transition">SENSEI ACADEMY</button>
+                <button onclick="openTheSage()" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-sm font-bold hover:scale-105 transition">THE SAGE</button>
+                <button onclick="showCart()" class="relative text-3xl text-orange-400 hover:text-orange-300 transition">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span id="cartCount" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-6 h-6 flex items-center justify-center rounded-full font-bold">0</span>
+                </button>
+                <!-- Login Button -->
+                <button onclick="openAuthModal()" id="loginBtn" 
+                        class="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-2xl text-sm font-bold transition">
+                    <i class="fa-solid fa-user"></i> Login
+                </button>
+                <!-- Dark/Light Toggle -->
+                <button onclick="toggleTheme()" class="text-2xl text-orange-400 hover:text-orange-300 transition">
+                    <i id="themeIcon" class="fa-solid fa-moon"></i>
+                </button>
+                
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <div class="relative text-white py-24 md:py-32 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6 text-center relative z-20">
+            <h2 class="hero-font text-5xl md:text-7xl font-bold mb-6 tracking-tighter gold-accent">Candle Sensei</h2>
+            <p class="text-xl md:text-3xl text-orange-100 mb-10">Elite Forex Tools • AI Intelligence • Real Edge</p>
+            <button onclick="document.getElementById('productsSection').scrollIntoView({behavior: 'smooth'})" 
+                    class="bg-black text-orange-400 px-14 py-6 rounded-3xl text-2xl font-semibold hover:bg-gray-900 transition-all flex items-center gap-4 mx-auto shadow-2xl">
+                Enter the Dojo <i class="fa-solid fa-fire"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- PRODUCTS SECTION -->
+    <div id="productsSection" class="max-w-7xl mx-auto px-6 py-16">
+        <h2 class="text-5xl font-semibold gold-accent mb-10">Sensei's Arsenal</h2>
+        <div class="flex gap-3 flex-wrap mb-10">
+            <button onclick="filterCategory('all')" class="category-btn active px-6 py-3 rounded-3xl text-sm font-medium bg-orange-600 text-white">All</button>
+            <button onclick="filterCategory('indicators')" class="category-btn px-6 py-3 rounded-3xl text-sm font-medium bg-gray-800">Indicators</button>
+            <button onclick="filterCategory('eas')" class="category-btn px-6 py-3 rounded-3xl text-sm font-medium bg-gray-800">EAs</button>
+            <button onclick="filterCategory('strategies')" class="category-btn px-6 py-3 rounded-3xl text-sm font-medium bg-gray-800">Strategies</button>
+            <button onclick="filterCategory('pdfs')" class="category-btn px-6 py-3 rounded-3xl text-sm font-medium bg-gray-800">PDFs & Guides</button>
+        </div>
+        <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></div>
+    </div>
+
+    <!-- THE SAGE MAIN MODAL -->
+    <div id="theSageModal" class="hidden fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-[#1a0a2e] to-[#0a0a1a] border-2 border-purple-500/70 rounded-3xl max-w-7xl w-full max-h-[94vh] overflow-hidden shadow-2xl modal">
+            <div class="bg-gradient-to-r from-purple-700 via-indigo-700 to-violet-700 p-8 flex justify-between items-center sticky top-0 z-10">
+                <div class="flex items-center gap-5">
+                    <i class="fa-solid fa-wand-magic-sparkles text-5xl"></i>
+                    <div>
+                        <h2 class="text-5xl font-bold text-white tracking-tighter">THE SAGE</h2>
+                        <p class="text-purple-200 text-lg">AI-Powered Forex Intelligence Arsenal</p>
+                    </div>
+                </div>
+                <button onclick="closeTheSage()" class="text-5xl text-white hover:text-red-400 transition-colors">×</button>
+            </div>
+           <div class="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 overflow-y-auto max-h-[calc(94vh-140px)]">
+               
+            <!-- EA CARD - NOW OPENS SUB-MODAL WITH 2 OPTIONS -->
+                <div onclick="openEAOptions()" class="sage-card rounded-3xl p-8 cursor-pointer border border-amber-400">
+                    <i class="fa-solid fa-robot text-6xl text-amber-400 mb-6"></i>
+                    <h3 class="text-3xl font-bold mb-2">Expert Advisors</h3>
+                    <p class="text-purple-300">My EAs + No-code Builder</p>
+                </div>
+                <div onclick="launchAITradingTool()" class="sage-card rounded-3xl p-8 cursor-pointer">
+                  <i class="fa-solid fa-brain text-6xl text-purple-400 mb-6"></i>
+                  <h3 class="text-3xl font-bold mb-2">AI Trading Tools</h3>
+                  <p class="text-purple-300">Multi-timeframe AI + What-if simulator</p>
+                </div>
+                <div onclick="openSignalGeneration()" class="sage-card rounded-3xl p-8 cursor-pointer">
+                    <i class="fa-solid fa-bolt text-6xl text-purple-400 mb-6"></i>
+                    <h3 class="text-3xl font-bold mb-2">Signal Generation</h3>
+                    <p class="text-purple-300">High-probability real-time signals</p>
+                </div>
+                <div onclick="openMarketAnalysis()" class="sage-card rounded-3xl p-8 cursor-pointer">
+                    <i class="fa-solid fa-chart-line text-6xl text-purple-400 mb-6"></i>
+                    <h3 class="text-3xl font-bold mb-2">AI Market Analysis</h3>
+                    <p class="text-purple-300">Deep sentiment & key levels</p>
+                </div>
+                <div onclick="openAutomatedTrading()" class="sage-card rounded-3xl p-8 cursor-pointer">
+                    <i class="fa-solid fa-clock text-6xl text-purple-400 mb-6"></i>
+                    <h3 class="text-3xl font-bold mb-2">Automated Trading</h3>
+                    <p class="text-purple-300">Live bot performance dashboard</p>
+                </div>
+                <div onclick="openKillZone()" class="sage-card rounded-3xl p-8 cursor-pointer border border-red-500/50">
+                    <i class="fa-solid fa-skull-crossbones text-6xl text-red-400 mb-6"></i>
+                    <h3 class="text-3xl font-bold mb-2">Kill Zone Strategy</h3>
+                    <p class="text-purple-300">High-liquidity session plays</p>
+                </div>
+                <div onclick="openRiskManagement()" class="sage-card rounded-3xl p-8 cursor-pointer border border-emerald-500/50">
+                    <i class="fa-solid fa-shield-halved text-6xl text-emerald-400 mb-6"></i>
+                    <h3 class="text-3xl font-bold mb-2">Risk Management</h3>
+                    <p class="text-purple-300">Position sizing & trade protection</p>
+                </div>
+                    <!-- NEW: Custom Indicator Builder -->
+    <div onclick="openIndicatorBuilder()" class="sage-card rounded-3xl p-8 cursor-pointer border border-cyan-400">
+        <i class="fa-solid fa-chart-line text-6xl text-cyan-400 mb-6"></i>
+        <h3 class="text-3xl font-bold mb-2">Custom Indicator Builder</h3>
+        <p class="text-purple-300">Build your own MT4/MT5 indicators (no coding)</p>
+    </div>
+            </div>
+        </div>
+    </div>
+    <!-- EA OPTIONS MODAL (My EA + Build EA) -->
+    <div id="eaOptionsModal" class="hidden fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-4">
+        <div class="bg-[#1a0f2e] border border-amber-400 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden modal">
+            <div class="p-6 border-b border-amber-400 flex justify-between bg-gradient-to-r from-amber-600 to-orange-600">
+                <h2 class="text-3xl font-bold text-white">Expert Advisors</h2>
+                <button onclick="closeEAOptionsModal()" class="text-4xl text-white">×</button>
+            </div>
+            <div class="flex border-b">
+                <button onclick="showMyEA()" id="tabMyEA" class="flex-1 py-5 text-center font-bold border-b-4 border-amber-400">My EAs</button>
+                <button onclick="showBuildEA()" id="tabBuildEA" class="flex-1 py-5 text-center font-bold">Build New EA</button>
+            </div>
+
+            <!-- TABS -->
+            <div class="flex border-b border-amber-400">
+                <button onclick="showTab(0)" id="tab0" class="flex-1 py-5 text-center font-bold border-b-4 border-amber-400">My EAs</button>
+                <button onclick="showTab(1)" id="tab1" class="flex-1 py-5 text-center font-bold">Build New EA</button>
+                <button onclick="showTab(2)" id="tab2" class="flex-1 py-5 text-center font-bold">Backtesting Tools</button>
+            </div>
+
+            <!-- TAB 0: MY EA -->
+            <div id="content0" class="p-8">
+                <div id="myEAList" class="space-y-4"></div>
+                <p id="noEA" class="text-center text-gray-400 py-12 hidden">No EAs yet. Build one above.</p>
+            </div>
+
+            <!-- TAB 1: BUILD EA (ENHANCED UI) -->
+            <div id="content1" class="p-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- LEFT: PARAMETERS -->
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-amber-300 mb-2 font-semibold">MQL Version</label>
+                            <div class="flex gap-3">
+                                <button onclick="selectMQL(5)" id="mql5Btn" class="flex-1 py-4 bg-amber-600 rounded-2xl font-bold">MQL5 (MT5)</button>
+                                <button onclick="selectMQL(4)" id="mql4Btn" class="flex-1 py-4 bg-gray-700 rounded-2xl font-bold">MQL4 (MT4)</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-amber-300 mb-2">Strategy Name</label>
+                            <input id="eaName" type="text" value="My Custom EA" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                        </div>
+
+                        <div>
+                            <label class="block text-amber-300 mb-2">Strategy Type</label>
+                            <select id="eaStrategy" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                                <option value="MA Crossover">Moving Average Crossover</option>
+                                <option value="RSI Scalper">RSI Scalper</option>
+                                <option value="MACD Divergence">MACD Divergence</option>
+                                <option value="Bollinger Breakout">Bollinger Breakout</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-amber-300 mb-2">Indicators (check all you want)</label>
+                            <div class="grid grid-cols-2 gap-3 text-sm" id="indicatorCheckboxes">
+                                <label class="flex items-center gap-2"><input type="checkbox" value="MA" checked> Moving Average</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="RSI"> RSI</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="MACD"> MACD</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="Bollinger"> Bollinger Bands</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="Stochastic"> Stochastic</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="ATR"> ATR</label>
+                            </div>
+                        </div>
+
+                        <!-- ENHANCED PARAMETERS -->
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs text-amber-300">Stop Loss (pips)</label>
+                                <input id="sl" type="number" value="50" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-amber-300">Take Profit (pips)</label>
+                                <input id="tp" type="number" value="100" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-amber-300">Trailing Stop (pips)</label>
+                                <input id="trailing" type="number" value="30" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-amber-300">Magic Number</label>
+                                <input id="magic" type="number" value="123456" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-amber-300">Max Spread (pips)</label>
+                                <input id="maxSpread" type="number" value="20" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-amber-300">Risk % per trade</label>
+                                <input id="risk" type="number" value="1" step="0.5" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: PREVIEW + CREATE -->
+                    <div>
+                        <button onclick="createEA()" class="w-full py-8 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-2xl font-bold rounded-3xl hover:scale-105 transition">CREATE EA & SAVE TO MY EA</button>
+                        <pre id="previewCode" class="mt-6 text-xs text-emerald-300 h-64 overflow-auto bg-[#111827] p-4 rounded-3xl">Your full MQL code will appear here after clicking CREATE...</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: BACKTESTING TOOLS -->
+            <div id="content2" class="p-8 hidden">
+                <h3 class="text-amber-300 font-bold mb-6">EA Backtesting Tools</h3>
+                <select id="backtestEASelect" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white mb-6">
+                    <!-- Populated by JS from myEAs -->
+                </select>
+                <button onclick="runBacktest()" class="w-full py-6 bg-emerald-600 hover:bg-emerald-700 rounded-3xl text-xl font-bold">RUN BACKTEST</button>
+                <div id="backtestResult" class="mt-8 bg-[#251a3a] rounded-3xl p-8"></div>
+            </div>
+        </div>
+    </div>
+    <!-- PRODUCT DETAIL MODAL -->
+    <div id="productDetailModal" class="hidden fixed inset-0 bg-black/90 z-[85] flex items-center justify-center p-4">
+        <div class="bg-[#1a0f2e] rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden modal">
+            <div class="p-6 flex justify-between border-b">
+                <h2 id="detailTitle" class="text-3xl font-bold"></h2>
+                <button onclick="closeProductDetail()" class="text-4xl">×</button>
+            </div>
+            <div class="p-8">
+                <img id="detailImage" class="w-full h-64 object-cover rounded-3xl mb-6" src="">
+                <div id="detailDesc" class="text-gray-300 mb-6"></div>
+                <div class="flex justify-between items-center">
+                    <div id="detailPrice" class="text-4xl font-bold text-orange-400"></div>
+                    <button onclick="addCurrentToCart()" class="px-10 py-4 bg-orange-600 hover:bg-orange-700 rounded-3xl font-bold">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CART SIDEBAR -->
+    <div id="cartSidebar" class="hidden fixed top-0 right-0 h-full w-full md:w-96 bg-[#1a0f2e] border-l border-orange-400 z-[95] overflow-y-auto">
+        <div class="p-6 border-b flex justify-between">
+            <h2 class="text-2xl font-bold">Your Cart</h2>
+            <button onclick="hideCart()" class="text-3xl">×</button>
+        </div>
+        <div id="cartItems" class="p-6 space-y-6"></div>
+        <div class="p-6 border-t mt-auto">
+            <div class="flex justify-between text-xl font-bold mb-6">
+                <span>Total</span>
+                <span id="cartTotal">$0</span>
+            </div>
+            <button onclick="proceedToCheckout()" 
+                    class="w-full py-5 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xl font-bold rounded-3xl">
+                Checkout
+            </button>
+        </div>
+    </div>
+
+    <!-- ORDER SUMMARY MODAL -->
+<div id="orderSummaryModal" class="hidden fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4">
+    <div class="bg-[#1a0f2e] rounded-3xl max-w-md w-full max-h-[90vh] overflow-hidden modal">
+        <div class="p-6 border-b bg-gradient-to-r from-orange-600 to-red-600">
+            <h2 class="text-3xl font-bold text-white">Order Summary</h2>
+        </div>
+        <div class="p-8">
+            <div id="summaryItems" class="space-y-4 mb-8"></div>
+            <div class="flex justify-between text-2xl font-bold border-t pt-6">
+                <span>Total</span>
+                <span id="summaryTotal">$0</span>
+            </div>
+        </div>
+        <div class="p-6 border-t">
+            <button onclick="showEmailModal()" class="w-full py-5 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xl font-bold rounded-3xl">
+                Proceed to Payment
+            </button>
+        </div>
+    </div>
+</div>
+
+    <!-- SENSEI ACADEMY MODAL (Fully Expanded) -->
+    <div id="academyModal" class="hidden fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-[#1a0a2e] to-[#0a0a1a] border-2 border-yellow-500/70 rounded-3xl max-w-5xl w-full max-h-[92vh] overflow-hidden shadow-2xl modal">
+            <div class="bg-gradient-to-r from-yellow-600 to-orange-600 p-8 flex justify-between items-center sticky top-0 z-10">
+                <div class="flex items-center gap-5">
+                    <i class="fa-solid fa-graduation-cap text-5xl"></i>
+                    <div>
+                        <h2 class="text-5xl font-bold text-white">SENSEI ACADEMY</h2>
+                        <p class="text-yellow-200">Mentorship • PDFs • Strategies • Learning Resources</p>
+                    </div>
+                </div>
+                <button onclick="closeAcademyModal()" class="text-5xl text-white hover:text-red-400">×</button>
+            </div>
+            <div class="p-10 grid grid-cols-1 md:grid-cols-2 gap-8 overflow-y-auto max-h-[calc(92vh-140px)]">
+                <div class="bg-[#251a3a] rounded-3xl p-8 hover:border-yellow-400 border border-transparent transition">
+                    <i class="fa-solid fa-user-tie text-5xl text-yellow-400 mb-6"></i>
+                    <h3 class="text-3xl font-bold">1-on-1 Mentorship</h3>
+                    <p class="text-yellow-200 mt-2">Weekly live sessions with Candle Sensei. Personal trade review &amp; strategy building.</p>
+                    <button onclick="alert('Mentorship booking flow coming soon!')" class="mt-8 w-full py-4 bg-yellow-600 hover:bg-yellow-700 rounded-2xl font-semibold">Book Session</button>
+                </div>
+                <div class="bg-[#251a3a] rounded-3xl p-8 hover:border-yellow-400 border border-transparent transition">
+                    <i class="fa-solid fa-file-pdf text-5xl text-yellow-400 mb-6"></i>
+                    <h3 class="text-3xl font-bold">Premium PDF Guides</h3>
+                    <p class="text-yellow-200 mt-2">Instant download: Price Action Mastery, SMC Bible, ICT Concepts, Risk Rules.</p>
+                    <button onclick="alert('PDFs ready for download!')" class="mt-8 w-full py-4 bg-yellow-600 hover:bg-yellow-700 rounded-2xl font-semibold">Browse &amp; Download PDFs</button>
+                </div>
+                <div class="bg-[#251a3a] rounded-3xl p-8 hover:border-yellow-400 border border-transparent transition">
+                    <i class="fa-solid fa-chart-bar text-5xl text-yellow-400 mb-6"></i>
+                    <h3 class="text-3xl font-bold">Proven Strategies</h3>
+                    <p class="text-yellow-200 mt-2">Kill Zone, Order Block, Fair Value Gap, Liquidity Sweep – all with templates.</p>
+                    <button onclick="alert('Strategy vault opened!')" class="mt-8 w-full py-4 bg-yellow-600 hover:bg-yellow-700 rounded-2xl font-semibold">View All Strategies</button>
+                </div>
+                <div class="bg-[#251a3a] rounded-3xl p-8 hover:border-yellow-400 border border-transparent transition">
+                    <i class="fa-solid fa-video text-5xl text-yellow-400 mb-6"></i>
+                    <h3 class="text-3xl font-bold">Video Library</h3>
+                    <p class="text-yellow-200 mt-2">Recorded lessons, live trade breakdowns, backtesting tutorials.</p>
+                    <button onclick="alert('Video library opened!')" class="mt-8 w-full py-4 bg-yellow-600 hover:bg-yellow-700 rounded-2xl font-semibold">Watch Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Sage Tool Modals (fully functional) -->
+    <!-- EA Modal -->
+    <div id="eaModal" class="hidden fixed inset-0 bg-black/90 z-[80] flex items-center justify-center p-4">
+        <div class="bg-[#1a0f2e] border border-purple-500/70 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden modal">
+            <div class="p-6 border-b border-purple-600 flex justify-between bg-gradient-to-r from-purple-700 to-indigo-700">
+                <h2 class="text-3xl font-bold text-white">Expert Advisors (EAs)</h2>
+                <button onclick="closeEAModal()" class="text-4xl text-white">×</button>
+            </div>
+            <div class="p-8 space-y-6" id="eaList"></div>
+        </div>
+    </div>
+
+    <!-- AI TRADING TOOLS MODAL (Modular + Fun) -->
+<div id="aiToolModal" class="hidden fixed inset-0 bg-black/90 z-[80] flex items-center justify-center p-4">
+    <div class="bg-[#1a0f2e] border border-purple-500/70 rounded-3xl max-w-5xl w-full max-h-[94vh] overflow-hidden modal">
+        <div class="p-6 border-b border-purple-600 flex justify-between bg-gradient-to-r from-purple-700 to-indigo-700">
+            <h2 class="text-3xl font-bold text-white">🤖 AI Trading Tools</h2>
+            <button onclick="closeAIToolModal()" class="text-4xl text-white">×</button>
+        </div>
+        <div class="p-8">
+            <div class="flex gap-4 mb-6">
+                <select id="aiPair" class="flex-1 bg-[#251a3a] p-4 rounded-2xl text-white">
+                    <option value="XAUUSD">XAUUSD - Gold</option>
+                    <option value="EURUSD">EURUSD</option>
+                    <option value="GBPUSD">GBPUSD</option>
+                </select>
+                <select id="aiTimeframe" class="flex-1 bg-[#251a3a] p-4 rounded-2xl text-white">
+                    <option value="M5">M5</option>
+                    <option value="M15" selected>M15</option>
+                    <option value="H1">H1</option>
+                    <option value="H4">H4</option>
+                </select>
+            </div>
+            <button onclick="runAITradingAnalysis()" class="w-full py-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-xl font-bold rounded-3xl">RUN AI ANALYSIS</button>
+            <div id="aiResult" class="mt-8 bg-[#251a3a] p-8 rounded-3xl min-h-[300px]"></div>
+            <canvas id="aiChart" class="mt-6 bg-[#0f0a1f] rounded-3xl p-4"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- SIGNAL GENERATION MODAL - 8 Signal Types -->
+<div id="signalModal" class="hidden fixed inset-0 bg-black/90 z-[80] flex items-center justify-center p-4">
+    <div class="bg-[#1a0f2e] border border-purple-500/70 rounded-3xl max-w-5xl w-full max-h-[94vh] overflow-hidden modal">
+        <div class="p-6 border-b border-purple-600 flex justify-between bg-gradient-to-r from-purple-700 to-indigo-700">
+            <h2 class="text-3xl font-bold text-white">⚡ Signal Generation</h2>
+            <button onclick="closeSignalModal()" class="text-4xl text-white">×</button>
+        </div>
+        <div class="p-8">
+            <!-- Signal Type Buttons -->
+            <div class="flex flex-wrap gap-3 mb-8">
+                <button onclick="generateSignals('scalp')" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-3xl text-sm font-medium">Scalp</button>
+                <button onclick="generateSignals('swing')" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-3xl text-sm font-medium">Swing</button>
+                <button onclick="generateSignals('trend')" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-3xl text-sm font-medium">Trend</button>
+                <button onclick="generateSignals('reversal')" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-3xl text-sm font-medium">Reversal</button>
+                <button onclick="generateSignals('breakout')" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-3xl text-sm font-medium">Breakout</button>
+                <button onclick="generateSignals('news')" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-3xl text-sm font-medium">News</button>
+                <button onclick="generateSignals('divergence')" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-3xl text-sm font-medium">Divergence</button>
+                <button onclick="generateSignals('orderblock')" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-3xl text-sm font-medium">Order Block</button>
+            </div>
+            
+            <div id="signalsContainer" class="space-y-6 min-h-[400px]"></div>
+        </div>
+    </div>
+</div>
+   <!-- AI MARKET ANALYSIS MODAL -->
+<div id="marketAnalysisModal" class="hidden fixed inset-0 bg-black/90 z-[80] flex items-center justify-center p-4">
+    <div class="bg-[#1a0f2e] border border-purple-500/70 rounded-3xl max-w-5xl w-full max-h-[94vh] overflow-hidden modal">
+        <div class="p-6 border-b border-purple-600 flex justify-between bg-gradient-to-r from-purple-700 to-indigo-700">
+            <h2 class="text-3xl font-bold text-white">📈 AI Market Analysis</h2>
+            <button onclick="closeMarketAnalysisModal()" class="text-4xl text-white">×</button>
+        </div>
+        <div class="p-8" id="marketAnalysisContent"></div>
+    </div>
+</div>
+    <!-- Automated Trading Dashboard Modal -->
+    <div id="autoTradingModal" class="hidden fixed inset-0 bg-black/90 z-[80] flex items-center justify-center p-4">
+        <div class="bg-[#1a0f2e] border border-purple-500/70 rounded-3xl max-w-5xl w-full max-h-[92vh] overflow-hidden modal">
+            <div class="p-6 border-b border-purple-600 flex justify-between bg-gradient-to-r from-purple-700 to-indigo-700">
+                <h2 class="text-3xl font-bold text-white">🤖 Automated Trading Dashboard</h2>
+                <button onclick="closeAutoTradingModal()" class="text-4xl text-white">×</button>
+            </div>
+            <div class="p-8">
+                <div class="grid grid-cols-3 gap-6 mb-8">
+                    <div class="bg-[#251a3a] rounded-3xl p-6 text-center">
+                        <p class="text-emerald-400">Active Bots</p>
+                        <p class="text-5xl font-bold text-white">3</p>
+                    </div>
+                    <div class="bg-[#251a3a] rounded-3xl p-6 text-center">
+                        <p class="text-emerald-400">Today's P&amp;L</p>
+                        <p class="text-5xl font-bold text-emerald-400">+$1,284</p>
+                    </div>
+                    <div class="bg-[#251a3a] rounded-3xl p-6 text-center">
+                        <p class="text-emerald-400">Win Rate</p>
+                        <p class="text-5xl font-bold text-white">84%</p>
+                    </div>
+                </div>
+                <canvas id="pnlChart" class="bg-[#0f0a1f] rounded-3xl p-6"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kill Zone Modal -->
+    <div id="killZoneModal" class="hidden fixed inset-0 bg-black/90 z-[80] flex items-center justify-center p-4">
+        <div class="bg-[#1a0f2e] border border-red-500/70 rounded-3xl max-w-7xl w-full max-h-[95vh] overflow-hidden flex flex-col lg:flex-row modal">
+            <div class="flex-1 p-4">
+                <iframe id="sageChart" width="100%" height="100%" frameborder="0" src="https://www.tradingview.com/widgetembed/?symbol=XAUUSD&amp;interval=5&amp;theme=dark"></iframe>
+            </div>
+            <div class="lg:w-96 bg-[#120c22] p-6 overflow-y-auto">
+                <h2 class="text-3xl font-bold text-red-400 mb-6">Kill Zone Scanner</h2>
+                <button onclick="activateKillZone()" class="w-full py-5 bg-red-600 rounded-3xl text-xl font-bold">Activate Scanner</button>
+                <div id="killZoneResult" class="mt-8"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Management Modal -->
+    <div id="riskModal" class="hidden fixed inset-0 bg-black/90 z-[80] flex items-center justify-center p-4">
+        <div class="bg-[#1a0f2e] border border-emerald-500/70 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-hidden modal">
+            <div class="p-6 border-b border-emerald-600 flex justify-between bg-gradient-to-r from-emerald-700 to-teal-700">
+                <h2 class="text-3xl font-bold text-white">🛡️ Risk Management Tool</h2>
+                <button onclick="closeRiskModal()" class="text-4xl text-white">×</button>
+            </div>
+            <div class="p-8 space-y-8">
+                <div>
+                    <label class="block text-emerald-300 mb-3">Account Balance (USD)</label>
+                    <input id="balanceInput" type="number" value="10000" class="w-full bg-[#251a3a] p-5 rounded-3xl text-2xl">
+                </div>
+                <div>
+                    <label class="block text-emerald-300 mb-3">Risk % per trade</label>
+                    <input type="range" id="riskSlider" min="0.5" max="5" step="0.5" value="1" class="w-full accent-emerald-400">
+                    <div class="flex justify-between text-emerald-400"><span>0.5%</span><span id="riskDisplay">1%</span><span>5%</span></div>
+                </div>
+                <button onclick="calculateRisk()" class="w-full py-6 bg-emerald-600 rounded-3xl text-2xl font-bold">Calculate Safe Trade Size</button>
+                <div id="riskOutput" class="bg-[#251a3a] rounded-3xl p-8 text-center text-xl"></div>
+            </div>
+        </div>
+    </div>
+    <!-- EA BUILDER MODAL - FULL TOOL -->
+    <div id="eaBuilderModal" class="hidden fixed inset-0 bg-black/90 z-[80] flex items-center justify-center p-4">
+        <div class="bg-[#1a0f2e] border border-amber-400 rounded-3xl max-w-5xl w-full max-h-[95vh] overflow-hidden modal">
+            <div class="p-6 border-b border-amber-400 flex justify-between bg-gradient-to-r from-amber-600 to-orange-600">
+                <h2 class="text-3xl font-bold text-white">🚀 EA Builder - Create MQL4 / MQL5 Bot</h2>
+                <button onclick="closeEABuilderModal()" class="text-4xl text-white">×</button>
+            </div>
+            <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-y-auto max-h-[calc(95vh-80px)]">
+                <!-- LEFT: FORM -->
+                <div class="space-y-8">
+                    <div>
+                        <label class="block text-amber-300 mb-2 font-semibold">MQL Version</label>
+                        <div class="flex gap-4">
+                            <button onclick="selectVersion(5)" id="btnMQL5" class="flex-1 py-4 bg-amber-600 text-white rounded-2xl font-bold">MQL5 (MT5)</button>
+                            <button onclick="selectVersion(4)" id="btnMQL4" class="flex-1 py-4 bg-gray-700 hover:bg-gray-600 rounded-2xl font-bold">MQL4 (MT4)</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-amber-300 mb-2 font-semibold">Strategy Type</label>
+                        <select id="strategyType" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                            <option value="trend">Trend Following (Moving Average Crossover)</option>
+                            <option value="scalper">Scalper (RSI + Bollinger)</option>
+                            <option value="breakout">Breakout (Donchian Channel)</option>
+                            <option value="macd">MACD Divergence</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-amber-300 mb-2">Indicator 1</label>
+                            <select id="ind1" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                                <option value="MA">Moving Average (50)</option>
+                                <option value="RSI">RSI (14)</option>
+                                <option value="MACD">MACD</option>
+                                <option value="BB">Bollinger Bands</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-amber-300 mb-2">Indicator 2</label>
+                            <select id="ind2" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                                <option value="None">None</option>
+                                <option value="MA">Moving Average (200)</option>
+                                <option value="RSI">RSI (14)</option>
+                                <option value="MACD">MACD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-amber-300 mb-2">Stop Loss (pips)</label>
+                            <input id="slPips" type="number" value="50" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white text-center">
+                        </div>
+                        <div>
+                            <label class="block text-amber-300 mb-2">Take Profit (pips)</label>
+                            <input id="tpPips" type="number" value="100" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white text-center">
+                        </div>
+                        <div>
+                            <label class="block text-amber-300 mb-2">Risk % per trade</label>
+                            <input id="riskPercent" type="number" value="1" step="0.5" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white text-center">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-amber-300 mb-2">Entry Threshold (e.g. RSI &lt; 30)</label>
+                        <input id="threshold" type="text" value="RSI &lt; 30" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                    </div>
+
+                    <button onclick="generateBotCode()" 
+                            class="w-full py-6 bg-gradient-to-r from-amber-600 to-orange-600 text-white text-2xl font-bold rounded-3xl hover:scale-105 transition">
+                        GENERATE FULL MQL CODE 🔥
+                    </button>
+                </div>
+
+                <!-- RIGHT: GENERATED CODE -->
+                <div>
+                    <h3 class="text-amber-300 font-bold mb-4">Generated MQL Code</h3>
+                    <pre id="generatedCode" class="text-emerald-300 text-sm leading-relaxed h-[520px]">Select options and click Generate</pre>
+                    <button onclick="copyBotCode()" 
+                            class="mt-4 w-full py-4 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-semibold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-copy"></i> COPY TO CLIPBOARD
+                    </button>
+                    <p class="text-xs text-gray-400 mt-4 text-center">Paste directly into MetaEditor → Compile → Ready to trade</p>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- CUSTOM INDICATOR BUILDER MODAL -->
+<div id="indicatorBuilderModal" class="hidden fixed inset-0 bg-black/90 z-[80] flex items-center justify-center p-4">
+    <div class="bg-[#1a0f2e] border border-cyan-400 rounded-3xl max-w-5xl w-full max-h-[94vh] overflow-hidden modal">
+        <div class="p-6 border-b border-cyan-400 flex justify-between bg-gradient-to-r from-cyan-600 to-blue-600">
+            <h2 class="text-3xl font-bold text-white">📊 Custom Indicator Builder</h2>
+            <button onclick="closeIndicatorBuilderModal()" class="text-4xl text-white">×</button>
+        </div>
+        <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-y-auto max-h-[calc(94vh-100px)]">
+            <!-- LEFT: FORM -->
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-cyan-300 mb-2 font-semibold">Indicator Name</label>
+                    <input id="indName" type="text" value="Sensei Momentum" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                </div>
+
+                <div>
+                    <label class="block text-cyan-300 mb-2">Indicator Type</label>
+                    <select id="indType" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                        <option value="MA">Moving Average</option>
+                        <option value="RSI">RSI</option>
+                        <option value="MACD">MACD</option>
+                        <option value="Bollinger">Bollinger Bands</option>
+                        <option value="Stochastic">Stochastic Oscillator</option>
+                        <option value="Custom Momentum">Custom Momentum</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs text-cyan-300">Period</label>
+                        <input id="period" type="number" value="14" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-cyan-300">Shift</label>
+                        <input id="shift" type="number" value="0" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-cyan-300 mb-2">Line Color</label>
+                    <input id="lineColor" type="color" value="#22c55e" class="w-full h-12 bg-[#251a3a] rounded-2xl">
+                </div>
+
+                <div>
+                    <label class="block text-cyan-300 mb-2">Add Levels (optional)</label>
+                    <input id="levels" type="text" value="30,50,70" placeholder="30,50,70" class="w-full bg-[#251a3a] p-4 rounded-2xl text-white">
+                </div>
+
+                <button onclick="generateIndicatorCode()" 
+                        class="w-full py-8 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-2xl font-bold rounded-3xl hover:scale-105 transition">
+                    GENERATE INDICATOR CODE
+                </button>
+            </div>
+
+            <!-- RIGHT: GENERATED CODE -->
+            <div>
+                <h3 class="text-cyan-300 font-bold mb-4">Generated MQL Code</h3>
+                <pre id="indPreviewCode" class="text-xs text-cyan-300 h-96 overflow-auto bg-[#111827] p-4 rounded-3xl">Your custom indicator code will appear here...</pre>
+                <button onclick="copyIndicatorCode()" 
+                        class="mt-4 w-full py-4 bg-cyan-600 hover:bg-cyan-700 rounded-2xl font-semibold flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-copy"></i> COPY TO CLIPBOARD
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+            <div class="p-8">
+                <!-- We'll put the form + generated code here in the next step -->
+                <p class="text-center text-gray-400 py-20">Indicator Builder form will go here...</p>
+            </div>
+        </div>
+    </div>
+    <!-- LOGIN / REGISTER MODAL -->
+<div id="authModal" class="hidden fixed inset-0 bg-black/90 z-[90] flex items-center justify-center p-4">
+    <div class="bg-[#1a0f2e] border border-orange-400 rounded-3xl max-w-md w-full max-h-[90vh] overflow-hidden modal">
+        <div class="p-6 border-b border-orange-400 flex justify-between bg-gradient-to-r from-orange-600 to-red-600">
+            <h2 id="authTitle" class="text-3xl font-bold text-white">Login to Candle Sensei</h2>
+            <button onclick="closeAuthModal()" class="text-4xl text-white">×</button>
+        </div>
+        <div class="p-8">
+            <input id="authEmail" type="email" placeholder="your@email.com" class="w-full mb-4 p-4 bg-[#251a3a] rounded-2xl text-white">
+            <input id="authPassword" type="password" placeholder="Password" class="w-full mb-6 p-4 bg-[#251a3a] rounded-2xl text-white">
+            
+            <button onclick="handleAuth()" id="authButton" 
+                    class="w-full py-5 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xl font-bold rounded-3xl">LOGIN</button>
+            
+            <div class="text-center mt-6">
+                <span id="authToggleText" class="text-purple-300">Don't have an account? </span>
+                <button onclick="toggleAuthMode()" class="text-orange-400 font-semibold">Register</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- EMAIL MODAL -->
+<div id="emailModal" class="hidden fixed inset-0 bg-black/90 z-[110] flex items-center justify-center p-4">
+    <div class="bg-[#1a0f2e] rounded-3xl max-w-md w-full max-h-[90vh] overflow-hidden modal">
+        <div class="p-8">
+            <h2 class="text-3xl font-bold mb-8 text-center">Where should we send your files?</h2>
+            <input id="customerEmail" type="email" placeholder="your@email.com" class="w-full p-5 bg-[#251a3a] rounded-3xl text-white text-lg mb-8">
+            <button onclick="sendOrderToTelegram()" class="w-full py-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xl font-bold rounded-3xl">
+                Send Order to Telegram
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- USER DASHBOARD MODAL -->
+<div id="dashboardModal" class="hidden fixed inset-0 bg-black/90 z-[90] flex items-center justify-center p-4">
+    <div class="bg-[#1a0f2e] border border-orange-400 rounded-3xl max-w-5xl w-full max-h-[94vh] overflow-hidden modal">
+        <div class="p-6 border-b border-orange-400 flex justify-between bg-gradient-to-r from-orange-600 to-red-600">
+            <div class="flex items-center gap-4">
+                <i class="fa-solid fa-user text-4xl"></i>
+                <div>
+                    <h2 class="text-3xl font-bold text-white">My Dashboard</h2>
+                    <p id="userEmailDisplay" class="text-orange-200"></p>
+                </div>
+            </div>
+            <button onclick="logout()" class="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-2xl">Logout</button>
+        </div>
+        
+        <div class="p-8">
+            <h3 class="text-2xl font-bold mb-6">My Created EAs</h3>
+            <div id="dashboardEAList" class="space-y-4"></div>
+
+            <h3 class="text-2xl font-bold mt-12 mb-6">My Custom Indicators</h3>
+            <div id="dashboardIndicatorList" class="space-y-4"></div>
+        </div>
+    </div>
+</div>
+</div>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+
+    <!-- Your JS files -->
+    <script src="js/auth.js"></script>
+    <script src="js/bot.js"></script>
+     <script src="js/cart.js"></script>
+     <script src="js/firebase.js"></script>
+     <script src="js/main.js"></script>
+     <script src="js/modal.js"></script>
+     <script src="js/product.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/utils.js"></script>
+    
+</body>
+</html>

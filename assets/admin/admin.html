@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Candle Sensei - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <style>
+      body {
+        background: #0a0a0a;
+        color: #ddd;
+      }
+      .flame {
+        background: linear-gradient(135deg, #ff6b35, #c41e3a);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center">
+      <div class="bg-gray-900 p-10 rounded-3xl w-full max-w-md">
+        <h1 class="text-4xl font-bold text-center mb-8 text-orange-400">
+          Candle Sensei
+        </h1>
+        <h2 class="text-2xl font-semibold mb-6 text-center">Admin Login</h2>
+        <input
+          id="email"
+          type="email"
+          placeholder="your@email.com"
+          class="w-full mb-4 p-4 bg-gray-800 rounded-2xl"
+        />
+        <input
+          id="password"
+          type="password"
+          placeholder="Password"
+          class="w-full mb-6 p-4 bg-gray-800 rounded-2xl"
+        />
+        <button
+          id="login-btn"
+          class="flame w-full py-4 rounded-2xl text-white font-bold text-lg"
+        >
+          LOGIN AS SENSEI
+        </button>
+      </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD (hidden until login) -->
+    <div id="dashboard" class="hidden">
+      <nav class="bg-black p-6 flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-orange-400">Candle Sensei Admin</h1>
+        <button onclick="logout()" class="px-6 py-3 bg-red-600 rounded-2xl">
+          Logout
+        </button>
+      </nav>
+
+      <div class="max-w-7xl mx-auto p-8">
+        <button
+          onclick="showAddModal()"
+          class="flame px-8 py-4 rounded-3xl text-white font-bold mb-8 flex items-center gap-3"
+        >
+          <i class="fa-solid fa-plus"></i> ADD NEW PRODUCT
+        </button>
+
+        <div class="bg-gray-900 rounded-3xl overflow-hidden">
+          <table class="w-full">
+            <thead class="bg-black">
+              <tr>
+                <th class="p-6 text-left">Image</th>
+                <th class="p-6 text-left">Name</th>
+                <th class="p-6 text-left">Price</th>
+                <th class="p-6 text-left">Category</th>
+                <th class="p-6 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="productsTable" class="text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD/EDIT MODAL -->
+    <div
+      id="productModal"
+      class="hidden fixed inset-0 bg-black/80 flex items-center justify-center"
+    >
+      <div class="bg-gray-900 w-full max-w-2xl rounded-3xl p-8">
+        <h3 id="modalTitle" class="text-3xl font-bold mb-6">Add New Product</h3>
+
+        <input
+          id="prodName"
+          placeholder="Product Name"
+          class="w-full mb-4 p-4 bg-gray-800 rounded-2xl"
+        />
+        <input
+          id="prodPrice"
+          type="number"
+          placeholder="Price (KES)"
+          class="w-full mb-4 p-4 bg-gray-800 rounded-2xl"
+        />
+        <input
+          id="prodCategory"
+          placeholder="Category (indicators/bots/strategies)"
+          class="w-full mb-4 p-4 bg-gray-800 rounded-2xl"
+        />
+        <textarea
+          id="prodDesc"
+          placeholder="Description"
+          rows="3"
+          class="w-full mb-4 p-4 bg-gray-800 rounded-2xl"
+        ></textarea>
+
+        <input
+          id="prodImage"
+          type="file"
+          accept="image/*"
+          class="w-full mb-6"
+        />
+
+        <div class="flex gap-4">
+          <button
+            onclick="saveProduct()"
+            class="flex-1 flame py-4 rounded-2xl text-white font-bold"
+          >
+            SAVE PRODUCT 🔥
+          </button>
+          <button
+            onclick="closeModal()"
+            class="flex-1 py-4 border border-gray-600 rounded-2xl"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- External JavaScript file -->
+    <script type="module" src="admin.js"></script>
+    <script type="module">
+      import { getAuth, } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+      import { getFirestore, } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+      import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+      import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+      } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyD599Ac1y_4AzkrFqY4cYrKNF4kupYQHnM",
+        authDomain: "candle-sensei.firebaseapp.com",
+        projectId: "candle-sensei",
+        storageBucket: "candle-sensei.firebasestorage.app",
+        messagingSenderId: "281164401480",
+        appId: "1:281164401480:web:ecf86614b5d8890e23417d",
+        measurementId: "G-Z0WHW3LCWF",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
+      console.log("Test: Firebase Auth loaded");
+
+      document.querySelector('button[onclick="login()"]').onclick =
+        async () => {
+          console.log("Test button clicked");
+
+          const email = document.getElementById("email").value.trim();
+          const pass = document.getElementById("password").value;
+
+          console.log("Trying:", email);
+
+          try {
+            const result = await signInWithEmailAndPassword(auth, email, pass);
+            console.log("SUCCESS - UID:", result.user.uid);
+            alert("Logged in! Check console.");
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("dashboard").style.display = "block";
+          } catch (err) {
+            console.error("ERROR:", err.code, err.message);
+            alert("Error: " + err.message);
+          }
+        };
+    </script>
+  </body>
+</html>
