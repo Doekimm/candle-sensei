@@ -312,3 +312,33 @@ function copyIndicatorCode() {
     alert("✅ Indicator code copied to clipboard!");
   });
 }
+// Sensei Academy - Mentorship
+function openMentorshipForm() {
+  closeAcademyModal();
+  document.getElementById("mentorshipModal").classList.remove("hidden");
+  document.getElementById("mentorshipModal").classList.add("flex");
+}
+
+function closeMentorshipModal() {
+  const modal = document.getElementById("mentorshipModal");
+  modal.classList.remove("flex");
+  modal.classList.add("hidden");
+}
+
+function submitMentorshipBooking() {
+  const location =
+    document.getElementById("meetLocation").value || "Not specified";
+  const date = document.getElementById("meetDate").value || "Not specified";
+  const time = document.getElementById("meetTime").value || "Not specified";
+
+  const message = `🔔 New Mentorship Booking!\n\nLocation: ${location}\nDate: ${date}\nTime: ${time}\n\nPlease reply to arrange payment and confirmation.`;
+
+  // Send to your Telegram
+  window.open(
+    `https://t.me/@Candlesenseii?text=${encodeURIComponent(message)}`,
+    "_blank",
+  );
+
+  alert("✅ Booking request sent to Sensei via Telegram!");
+  closeMentorshipModal();
+}

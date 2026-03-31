@@ -152,13 +152,14 @@ const products = [
 ];
 
 function renderProducts() {
-    const grid = document.getElementById('productsGrid');
-    if (!grid) return;
-    grid.innerHTML = '';
-    products.forEach(p => {
-        const div = document.createElement('div');
-        div.className = "bg-[#1a1a1a] border border-gray-700 rounded-3xl overflow-hidden cursor-pointer";
-        div.innerHTML = `
+  const grid = document.getElementById("productsGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  products.forEach((p) => {
+    const div = document.createElement("div");
+    div.className =
+      "bg-[#1a1a1a] border border-gray-700 rounded-3xl overflow-hidden cursor-pointer";
+    div.innerHTML = `
             <img src="${p.image}" class="w-full h-48 object-cover">
             <div class="p-6">
                 <h3 class="font-bold text-xl">${p.name}</h3>
@@ -166,31 +167,32 @@ function renderProducts() {
                 <button onclick="showProductDetail(${p.id}); event.stopImmediatePropagation()" 
                         class="mt-6 w-full py-3 bg-orange-600 hover:bg-orange-700 rounded-2xl">View Details</button>
             </div>`;
-        div.onclick = () => showProductDetail(p.id);
-        grid.appendChild(div);
-    });
+    div.onclick = () => showProductDetail(p.id);
+    grid.appendChild(div);
+  });
 }
 
 function showProductDetail(id) {
-    currentProduct = products.find(p => p.id === id);
-    if (!currentProduct) return;
-    document.getElementById('detailTitle').textContent = currentProduct.name;
-    document.getElementById('detailImage').src = currentProduct.image;
-    document.getElementById('detailDesc').textContent = currentProduct.desc;
-    document.getElementById('detailPrice').textContent = `$${currentProduct.price}`;
-    document.getElementById('productDetailModal').classList.remove('hidden');
-    document.getElementById('productDetailModal').classList.add('flex');
+  currentProduct = products.find((p) => p.id === id);
+  if (!currentProduct) return;
+  document.getElementById("detailTitle").textContent = currentProduct.name;
+  document.getElementById("detailImage").src = currentProduct.image;
+  document.getElementById("detailDesc").textContent = currentProduct.desc;
+  document.getElementById("detailPrice").textContent =
+    `$${currentProduct.price}`;
+  document.getElementById("productDetailModal").classList.remove("hidden");
+  document.getElementById("productDetailModal").classList.add("flex");
 }
 
 function closeProductDetail() {
-    document.getElementById('productDetailModal').classList.remove('flex');
-    document.getElementById('productDetailModal').classList.add('hidden');
+  document.getElementById("productDetailModal").classList.remove("flex");
+  document.getElementById("productDetailModal").classList.add("hidden");
 }
 
 function addCurrentToCart() {
-    if (!currentProduct) return;
-    cart.push({...currentProduct});
-    updateCartCount();
-    alert(`${currentProduct.name} added to cart!`);
-    closeProductDetail();
+  if (!currentProduct) return;
+  cart.push({ ...currentProduct });
+  updateCartCount();
+  alert(`${currentProduct.name} added to cart!`);
+  closeProductDetail();
 }
